@@ -950,6 +950,7 @@ function pepyBars(){
 .bmark.you{stroke:var(--ox)}
 .bmark.avg{stroke:var(--navy);stroke-dasharray:5 4}
 .bmark.best{stroke:var(--sage)}
+.bell .bmark.lead{stroke-width:1.5;stroke-dasharray:1.5 4;stroke-linecap:round;opacity:.9}
 .blab{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
 .blab.you{fill:var(--ox)}
 .blab.avg{fill:var(--navy)}
@@ -4115,11 +4116,22 @@ function hookBell(){
        && Math.abs(x(B.best) - x(B.you)) < 150){
       anchor = m[0] === Math.min(B.best, B.you) ? "end" : "start";
     }
+    /* keep the cohort leader clear: when you sit close to the cohort line,
+       put your label on the side away from it */
+    if(!narrow && m[1] === "you" && Math.abs(x(B.you) - x(B.avg)) < 95){
+      anchor = B.you < B.avg ? "end" : "start";
+    }
     var dx = anchor === "end" ? -8 : anchor === "start" ? 8 : 0;
     g.appendChild(mk("text", { x:xv + dx, y:T - m[3] - lgap, "class":"blab " + m[1], "text-anchor":anchor },
       m[2].toUpperCase()));
     g.appendChild(mk("text", { x:xv + dx, y:T - m[3], "class":"bval " + m[1], "text-anchor":anchor },
       money(m[0])));
+    /* a dotted leader ties every title to its line: down from under the value
+       when the label is centred on the line, alongside the label when it sits
+       to one side of it */
+    var ly1 = anchor === "middle" ? T - m[3] + (narrow ? 12 : 8)
+                                  : T - m[3] - lgap - (narrow ? 14 : 9);
+    if(ly1 < T - 14) g.appendChild(mk("line", { x1:xv, x2:xv, y1:ly1, y2:T - 12, "class":"bmark lead " + m[1] }));
   });
 
   /* gap call-out between you and best in class */
